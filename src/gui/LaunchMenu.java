@@ -1,12 +1,24 @@
 package gui;
 
 import javax.swing.JFrame;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import javax.swing.JButton;
 import controller.Game;
 
+/**
+ * The class which initializes the swing environment and the game object.
+ * @author Alec Dowty
+ * @author Aaron Gitell
+ * @author Joel Hemphill
+ */
 public class LaunchMenu {
 
+	/**
+	 * The entry point to the program
+	 * @param args unused
+	 */
 	public static void main(String[] args) {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -14,7 +26,7 @@ public class LaunchMenu {
 				JButton loadButton  = new JButton("Load");
 				JButton exitButton  = new JButton("Exit");
 				
-				JFrame frame = new JFrame("HelloWorldSwing");
+				JFrame frame = new JFrame("Epic Trivia Maze");
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				
 				Game game = new Game();
@@ -32,13 +44,18 @@ public class LaunchMenu {
 						frame.dispose();
 						return Void;
 					});
-					System.out.println(game.getQuestionBox());
-					frame.add(game.getQuestionBox());
-					frame.add(game.getMap());
+					
+					frame.setLayout(new FlowLayout());
+					frame.getContentPane().setLayout(new GridLayout(1,2));
+					frame.getContentPane().add(game.getMap());
+					frame.getContentPane().add(game.getQuestionBox());
+					
+					frame.setJMenuBar(game.getOptionBar());
+					
 					frame.revalidate();
 					frame.pack();
-					frame.setSize(400,500);//400 width and 500 height  
-					frame.setLayout(null);//using no layout managers  
+					frame.setSize(1000,500);//400 width and 500 height  
+					
 					frame.repaint();
 				});
 				frame.add(startButton);

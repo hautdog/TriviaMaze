@@ -1,72 +1,105 @@
 package gui;
 import java.awt.Color;
-import java.awt.Point;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.function.Function;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import controller.Game;
 
+/**
+ * QuestionBox class which handles both the display of the question, as well as the submission of answers.
+ * @author Alec Dowty
+ * @author Aaron Gitell
+ * @author Joel Hemphill
+ */
 @SuppressWarnings("serial")
 public class QuestionBox extends JPanel implements ActionListener {
 	
-	JLabel questionPanel;
-	Timer shakeTimer;
+	/*
+	 * A reference to the owning Game Object
+	 */
+	private Game myGame;
 	
-	AnswerPanel answerPanel;
+	/*
+	 * The text box which displays the text of the question.
+	 */
+	private JLabel myQuestionPanel;
 	
-	// Settings for the shake that occurs when an incorrect answers is given
-	static final long SHAKE_DURATION = 500; // Shake duration in milliseconds
-	static final int SHAKE_FREQUENCY = 2; // Frequency in Hertz
-	static final int SHAKE_MAGNITUDE = 10; // Amplitude of the shake in pixels
+	/*
+	 * The panel which contains the answers selection/submission elements.
+	 */
+	private AnswerPanel myAnswerPanel;
 	
-	public QuestionBox() {
-		questionPanel = new JLabel();
-		answerPanel = new AnswerPanel();
-		answerPanel.setBounds(50, 20, 200, 200);
-		answerPanel.setBackground(Color.gray);
+	/**
+	 * Initializes swing components of the QuestionBox, and creates the question and answer panels.
+	 * @param theGame the owning Game object
+	 */
+	public QuestionBox(Game theGame) {
+		myGame = theGame;
 		
-		questionPanel.setBorder(BorderFactory.createTitledBorder("Question"));
-		questionPanel.setBounds(50, 240, 200, 200);
-		questionPanel.setBackground(Color.gray);
-		this.add(questionPanel);
-		this.add(answerPanel);
-		this.setBounds(0,0,1000,1000);
-		this.setLayout(null);
+		myQuestionPanel = new JLabel();
+		myAnswerPanel = new AnswerPanel();
+		myAnswerPanel.setBounds(50, 20, 400, 200);
+		myAnswerPanel.setBackground(Color.GRAY);
+		
+		myQuestionPanel.setBorder(BorderFactory.createTitledBorder("Question"));
+		myQuestionPanel.setBounds(50, 240, 400, 200);
+		myQuestionPanel.setBackground(Color.GRAY);
+		this.add(myQuestionPanel);
+		this.add(myAnswerPanel);
+		this.setBounds(0,0,000,1000);
+		this.setLayout(new GridLayout(2,1));
 		this.repaint();
 	}
 	
-	public void actionPerformed(ActionEvent e) {
+	/**
+	 * Resets the QuestionBox and triggers the next phase of the game loop.
+	 * @param theEvent The event object
+	 */
+	@Override
+	public void actionPerformed(ActionEvent theEvent) {
 		// on answer result received
-		if (e.getSource() == answerPanel) {
-			if(!answerPanel.isCorrect) {
-				final Point startPos = this.getLocation();
-				final long startTime = System.currentTimeMillis();
-			    shakeTimer = new Timer(5, shakeEvent -> {
-			    	long elapsedTime = System.currentTimeMillis() - startTime;
-			    	
-			    	this.setLocation(
-			    			startPos.x + (int)(Math.sin(elapsedTime * 2 * Math.PI * SHAKE_FREQUENCY) * SHAKE_MAGNITUDE),
-			    			startPos.y
-	    			);
-			    	
-			    	if (elapsedTime > SHAKE_DURATION) {
-			    		shakeTimer.stop();
-			    		this.setLocation(startPos);
-			    		this.repaint();
-			    		
-			    		questionPanel.removeAll();
-			    	}
-			    });
-			    shakeTimer.start();
-			}
+		if (theEvent.getSource() == myAnswerPanel) {
+			myAnswerPanel.reset();
+			myQuestionPanel.removeAll();
+    		myGame.handleQuestionResolution();
 		}
 	}
 	
-	public void displaySingleChoiceQuestion(String question, String[] answers, Function<Integer, Boolean> evalAnswerFunc) {
-		questionPanel.setText(question);
-		answerPanel.addSingleChoiceAnswers(answers, evalAnswerFunc, this);
+	/**
+	 * Displays a short-answer question for the user to answer.
+	 * @param theQuestion The text of the question
+	 * @param theEvalAnswerFunc A function which evaluates a provided string, to see if the string matches the correct answer
+	 */
+	public void displayShortAnswerQuestion(String theQuestion, Function<String, Boolean> theEvalAnswerFunc) {
+		myAnswerPanel.reset();
+		myQuestionPanel.removeAll();
 		
-		questionPanel.repaint();
-		answerPanel.repaint();
+		myQuestionPanel.setText(theQuestion);
+		myAnswerPanel.addShortAnswer(theEvalAnswerFunc, this);
+		
+		myQuestionPanel.repaint();
+		myAnswerPanel.repaint();
+	}
+	
+	/**
+	 * Displays a single-choice question for the user to answer.
+	 * @param theQuestion The text of the question
+	 * @param theAnswers the array of options to provide the user
+	 * @param theEvalAnswerFunc A function which evaluates a provided index into the array of answers, to see if the it matches the correct answer.
+	 */
+	public void displaySingleChoiceQuestion(String theQuestion, ArrayList<String> theAnswers, Function<Integer, Boolean> theEvalAnswerFunc) {
+		myAnswerPanel.reset();
+		myQuestionPanel.removeAll();
+		
+		myQuestionPanel.setText(theQuestion);
+		myAnswerPanel.addSingleChoiceAnswers(theAnswers, theEvalAnswerFunc, this);
+		
+		myQuestionPanel.repaint();
+		myAnswerPanel.repaint();
 	}	
 }
